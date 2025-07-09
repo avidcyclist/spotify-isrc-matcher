@@ -62,6 +62,19 @@ def main():
     if not column_name:
         column_name = 'ISRC'
     
+    # Get header row
+    header_row_input = input("🔢 Enter header row number (or press Enter for row 1): ").strip()
+    if not header_row_input:
+        header_row = 0  # Row 1 in Excel = index 0 in pandas
+    else:
+        try:
+            header_row = int(header_row_input) - 1  # Convert to 0-indexed
+            if header_row < 0:
+                header_row = 0
+        except ValueError:
+            print("Invalid row number, using row 1")
+            header_row = 0
+    
     # Get output file
     output_file = input("💾 Enter output file name (or press Enter for auto-generated): ").strip()
     if not output_file:
@@ -77,6 +90,7 @@ def main():
     print(f"   Input: {input_file}")
     print(f"   Output: {output_file}")
     print(f"   Column: {column_name}")
+    print(f"   Header Row: {header_row + 1}")
     print(f"   Sheet: {sheet_name or 'First sheet'}")
     
     try:
@@ -89,6 +103,7 @@ def main():
             output_path=output_file,
             sheet_name=sheet_name,
             isrc_column=column_name,
+            header_row=header_row,
             delay=0.1  # 100ms delay between requests
         )
         

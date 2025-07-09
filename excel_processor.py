@@ -17,7 +17,7 @@ class ExcelISRCProcessor:
         self.matcher = SpotifyISRCMatcher(client_id, client_secret)
     
     def read_isrcs_from_excel(self, excel_path: str, sheet_name: str = None, 
-                             isrc_column: str = 'ISRC') -> List[str]:
+                             isrc_column: str = 'ISRC', header_row: int = 0) -> List[str]:
         """
         Read ISRCs from an Excel file
         
@@ -25,16 +25,17 @@ class ExcelISRCProcessor:
             excel_path: Path to the Excel file
             sheet_name: Name of the sheet to read (if None, reads first sheet)
             isrc_column: Name of the column containing ISRCs
+            header_row: Row number containing headers (0-indexed, so row 7 = header_row=6)
             
         Returns:
             List of ISRCs
         """
         try:
-            # Read Excel file
+            # Read Excel file with custom header row
             if sheet_name:
-                df = pd.read_excel(excel_path, sheet_name=sheet_name)
+                df = pd.read_excel(excel_path, sheet_name=sheet_name, header=header_row)
             else:
-                df = pd.read_excel(excel_path)
+                df = pd.read_excel(excel_path, header=header_row)
             
             logger.info(f"Successfully read Excel file: {excel_path}")
             logger.info(f"Sheet contains {len(df)} rows")
@@ -219,7 +220,7 @@ class ExcelISRCProcessor:
     
     def process_excel_file(self, input_path: str, output_path: str = None, 
                           sheet_name: str = None, isrc_column: str = 'ISRC',
-                          delay: float = 0.1) -> List[TrackInfo]:
+                          header_row: int = 0, delay: float = 0.1) -> List[TrackInfo]:
         """
         Complete workflow: read Excel, process ISRCs, save results
         
@@ -228,6 +229,7 @@ class ExcelISRCProcessor:
             output_path: Path for output Excel file (auto-generated if None)
             sheet_name: Sheet name to read from
             isrc_column: Column name containing ISRCs
+            header_row: Row number containing headers (0-indexed, so row 7 = header_row=6)
             delay: Delay between API calls
             
         Returns:
@@ -236,7 +238,7 @@ class ExcelISRCProcessor:
         logger.info(f"Starting Excel processing workflow for: {input_path}")
         
         # Read ISRCs from Excel
-        isrcs = self.read_isrcs_from_excel(input_path, sheet_name, isrc_column)
+        isrcs = self.read_isrcs_from_excel(input_path, sheet_name, isrc_column, header_row)
         
         # Process ISRCs
         results = self.matcher.process_isrc_list(isrcs, delay)
